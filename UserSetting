@@ -1,0 +1,85 @@
+CREATE TABLE CountryTable (
+    CountryID INT IDENTITY(1,1),
+    CountryTitle NVARCHAR(100) NOT NULL,
+    CONSTRAINT PK_CountryTable_CountryID PRIMARY KEY (CountryID)
+);
+CREATE TABLE CityTable (
+    CityId INT IDENTITY(1,1),
+    CountryID INT NOT NULL,
+    CityName NVARCHAR(100) NOT NULL,
+    CONSTRAINT PK_CityTable_CityId PRIMARY KEY (CityId),
+    CONSTRAINT FK_CityTable_CountryTable 
+        FOREIGN KEY (CountryID) REFERENCES CountryTable(CountryID)
+);
+CREATE TABLE GenderTable (
+    GenderId INT IDENTITY(1,1),
+    GenderType NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_GenderTable_GenderId PRIMARY KEY (GenderId)
+);
+CREATE TABLE UserStatusTable (
+    UserStatusID INT IDENTITY(1,1),
+    UserStatus NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_UserStatusTable_UserStatusID PRIMARY KEY (UserStatusID)
+);
+CREATE TABLE UserTypeTable (
+    UserTypeId INT IDENTITY(1,1),
+    UserType NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_UserTypeTable_UserTypeId PRIMARY KEY (UserTypeId)
+);
+CREATE TABLE AddressTypeTable (
+    AddressTypeID INT IDENTITY(1,1),
+    AddressType NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_AddressTypeTable_AddressTypeID PRIMARY KEY (AddressTypeID)
+);
+CREATE TABLE StatusTable (
+    StatusID INT IDENTITY(1,1),
+    StatusTitle NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_StatusTable_StatusID PRIMARY KEY (StatusID)
+);
+CREATE TABLE UserTable (
+    UserId INT IDENTITY(1,1),
+    UserTypeId INT NOT NULL,
+    UserName NVARCHAR(100) NOT NULL,
+    [Password] NVARCHAR(200) NOT NULL,
+    EmailAddress NVARCHAR(200) NOT NULL,
+    FirstName NVARCHAR(100) NOT NULL,
+    LastName NVARCHAR(100) NOT NULL,
+    ContactNo NVARCHAR(50) NULL,
+    GenderId INT NOT NULL,
+    UserStatusID INT NOT NULL,
+
+    CONSTRAINT PK_UserTable_UserId PRIMARY KEY (UserId),
+
+    CONSTRAINT FK_UserTable_UserTypeTable
+        FOREIGN KEY (UserTypeId) REFERENCES UserTypeTable(UserTypeId),
+
+    CONSTRAINT FK_UserTable_GenderTable
+        FOREIGN KEY (GenderId) REFERENCES GenderTable(GenderId),
+
+    CONSTRAINT FK_UserTable_UserStatusTable
+        FOREIGN KEY (UserStatusID) REFERENCES UserStatusTable(UserStatusID)
+);
+CREATE TABLE UserAddressTable (
+    UserAddressID INT IDENTITY(1,1),
+    UserID INT NOT NULL,
+    AddressTypeID INT NOT NULL,
+    FullAddress NVARCHAR(500) NOT NULL,
+    CityID INT NOT NULL,
+    PostalCode NVARCHAR(20) NULL,
+    ContactNo NVARCHAR(50) NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT PK_UserAddressTable_UserAddressID PRIMARY KEY (UserAddressID),
+
+    CONSTRAINT FK_UserAddressTable_UserTable
+        FOREIGN KEY (UserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_UserAddressTable_AddressTypeTable
+        FOREIGN KEY (AddressTypeID) REFERENCES AddressTypeTable(AddressTypeID),
+
+    CONSTRAINT FK_UserAddressTable_CityTable
+        FOREIGN KEY (CityID) REFERENCES CityTable(CityId),
+
+    CONSTRAINT FK_UserAddressTable_StatusTable
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
+);
