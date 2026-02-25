@@ -382,4 +382,52 @@ CREATE TABLE SeasonDiscountTable(
     CONSTRAINT FK_SeasonDiscount_Status
         FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
+-----------------Order and Payment Setting--------------------
+
+CREATE TABLE CartTable (
+    CartID INT IDENTITY(1,1),
+	ProductDetailID int not null,
+	Quantity int not null,
+	DiscountID int not null,
+    UniqueNo NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_CartTable_CartID PRIMARY KEY (CartID)
+);
+CREATE TABLE ShippingFeeTable (
+    ShippingFeeID INT IDENTITY(1,1),
+	CityID int not null,
+	ShippingFee float not null,
+	DeliveryTimeinDays int not null,
+    SattusID int NOT NULL,
+    CONSTRAINT PK_ShippingFeeTable_ShippingFeeID PRIMARY KEY (ShippingFeeID)
+);
+CREATE TABLE OrderStatusTable (
+    OrderStatusID INT IDENTITY(1,1),
+	OrderStatusTitle nvarchar(50) not null,
+    SattusID int NOT NULL,
+    CONSTRAINT PK_OrderStatusTable_OrderStatusID PRIMARY KEY (OrderStatusID)
+);
+CREATE TABLE PaymentTypeTable (
+    PaymentTypeID INT IDENTITY(1,1),
+	PaymentType nvarchar(150) not null,  
+    CONSTRAINT PK_PaymentTypeTable_PaymentTypeID PRIMARY KEY (PaymentTypeID)
+);
+
+CREATE TABLE OrderHeaderTable (
+    OrderHeaderID INT IDENTITY(1,1),
+	ShippingFeeID int not null,
+	UserAddressID int not null,
+	TotalCost float not null,
+	DiscountAmount float not null,
+	TotalPayment float not null,
+	OrderDate date not null,
+	OrderTime time(7) not null,
+	ShippingDate date not null,
+	OrderStatusID int not null,
+	PaymentTypeID int not null,
+	TransactionNo nvarchar(150) not null,  
+	TransactionTime time(7) not null,
+	PaymentReceiptSanpshot varchar(500) not null,
+    CONSTRAINT PK_OrderHeaderTable_OrderHeaderID PRIMARY KEY (OrderHeaderID)
+);
+
 	
