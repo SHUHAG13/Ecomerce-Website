@@ -384,50 +384,232 @@ CREATE TABLE SeasonDiscountTable(
 );
 -----------------Order and Payment Setting--------------------
 
+/* ===========================
+   CART TABLE
+=========================== */
+
 CREATE TABLE CartTable (
-    CartID INT IDENTITY(1,1),
-	ProductDetailID int not null,
-	Quantity int not null,
-	DiscountID int not null,
-    UniqueNo NVARCHAR(50) NOT NULL,
-    CONSTRAINT PK_CartTable_CartID PRIMARY KEY (CartID)
+    CartID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    ProductDetailID INT NOT NULL,
+    Quantity INT NOT NULL,
+    UnitPrice DECIMAL(18,2) NOT NULL,
+    UniqueNo NVARCHAR(50) NOT NULL,  -- guest/session tracking
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_Cart_User
+        FOREIGN KEY (UserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_Cart_ProductDetail
+        FOREIGN KEY (ProductDetailID) REFERENCES ProductDetailTable(ProductDetailID),
+
+    CONSTRAINT FK_Cart_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
+
+
+/* ===========================
+   SHIPPING FEE
+=========================== */
+
 CREATE TABLE ShippingFeeTable (
-    ShippingFeeID INT IDENTITY(1,1),
-	CityID int not null,
-	ShippingFee float not null,
-	DeliveryTimeinDays int not null,
-    SattusID int NOT NULL,
-    CONSTRAINT PK_ShippingFeeTable_ShippingFeeID PRIMARY KEY (ShippingFeeID)
+    ShippingFeeID INT IDENTITY(1,1) PRIMARY KEY,
+    CityID INT NOT NULL,
+    ShippingFee DECIMAL(18,2) NOT NULL,
+    DeliveryTimeInDays INT NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_ShippingFee_City
+        FOREIGN KEY (CityID) REFERENCES CityTable(CityId),
+
+    CONSTRAINT FK_ShippingFee_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
+
+
+/* ===========================
+   ORDER STATUS
+=========================== */
+
 CREATE TABLE OrderStatusTable (
-    OrderStatusID INT IDENTITY(1,1),
-	OrderStatusTitle nvarchar(50) not null,
-    SattusID int NOT NULL,
-    CONSTRAINT PK_OrderStatusTable_OrderStatusID PRIMARY KEY (OrderStatusID)
+    OrderStatusID INT IDENTITY(1,1) PRIMARY KEY,
+    OrderStatusTitle NVARCHAR(50) NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_OrderStatus_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
+
+
+/* ===========================
+   PAYMENT TYPE
+=========================== */
+
 CREATE TABLE PaymentTypeTable (
-    PaymentTypeID INT IDENTITY(1,1),
-	PaymentType nvarchar(150) not null,  
-    CONSTRAINT PK_PaymentTypeTable_PaymentTypeID PRIMARY KEY (PaymentTypeID)
+    PaymentTypeID INT IDENTITY(1,1) PRIMARY KEY,
+    PaymentType NVARCHAR(150) NOT NULL
 );
+
+
+/* ===========================
+   ORDER HEADER
+=========================== */
 
 CREATE TABLE OrderHeaderTable (
-    OrderHeaderID INT IDENTITY(1,1),
-	ShippingFeeID int not null,
-	UserAddressID int not null,
-	TotalCost float not null,
-	DiscountAmount float not null,
-	TotalPayment float not null,
-	OrderDate date not null,
-	OrderTime time(7) not null,
-	ShippingDate date not null,
-	OrderStatusID int not null,
-	PaymentTypeID int not null,
-	TransactionNo nvarchar(150) not null,  
-	TransactionTime time(7) not null,
-	PaymentReceiptSanpshot varchar(500) not null,
-    CONSTRAINT PK_OrderHeaderTable_OrderHeaderID PRIMARY KEY (OrderHeaderID)
+    OrderHeaderID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    ShippingFeeID INT NOT NULL,
+    UserAddressID INT NOT NULL,
+    TotalCost DECIMAL(18,2) NOT NULL,
+    DiscountAmount DECIMAL(18,2) NOT NULL,
+    TotalPayment DECIMAL(18,2) NOT NULL,
+    OrderDate DATE NOT NULL,
+    OrderTime TIME(7) NOT NULL,
+    ShippingDate DATE NULL,
+    OrderStatusID INT NOT NULL,
+    PaymentTypeID INT NOT NULL,
+    TransactionNo NVARCHAR(150) NULL,
+    TransactionTime TIME(7) NULL,
+    PaymentReceiptSnapshot VARCHAR(500) NULL,
+
+    CONSTRAINT FK_OrderHeader_User
+        FOREIGN KEY (UserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_OrderHeader_ShippingFee
+        FOREIGN KEY (ShippingFeeID) REFERENCES ShippingFeeTable(ShippingFeeID),
+
+    CONSTRAINT FK_OrderHeader_Address
+        FOREIGN KEY (UserAddressID) REFERENCES UserAddressTable(UserAddressID),
+
+    CONSTRAINT FK_OrderHeader_OrderStatus
+        FOREIGN KEY (OrderStatusID) REFERENCES OrderStatusTable(OrderStatusID),
+
+    CONSTRAINT FK_OrderHeader_PaymentType
+        FOREIGN KEY (PaymentTypeID) REFERENCES PaymentTypeTable(PaymentTypeID)
 );
 
-	
+
+/* ===========================
+   BANK ACCOUNT
+=========================== */
+
+CREATE TABLE BankAccountTable (
+    BankAccountID INT IDENTITY(1,1) PRIMARY KEY,
+    PaymentTypeID INT NOT NULL,
+    BankName NVARCHAR(450) NOT NULL,
+    AccountTitle NVARCHAR(450) NOT NULL,
+    AccountNo VARCHAR(100) NOT NULL,
+    IBANNo VARCHAR(100) NULL,
+    StatusID INT NOT NULL,
+    CreatedByUserID INT NOT NULL,
+
+    CONSTRAINT FK_BankAccount_PaymentType
+        FOREIGN KEY (PaymentTypeID) REFERENCES PaymentTypeTable(PaymentTypeID),
+
+    CONSTRAINT FK_BankAccount_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID),
+
+    CONSTRAINT FK_BankAccount_User
+        FOREIGN KEY (CreatedByUserID) REFERENCES UserTable(UserId)
+);
+
+
+/* ===========================
+   ORDER DETAIL
+=========================== */
+
+CREATE TABLE OrderDetailTable (
+    OrderDetailID INT IDENTITY(1,1) PRIMARY KEY,
+    OrderHeaderID INT NOT NULL,
+    ProductDetailID INT NOT NULL,
+    UnitPrice DECIMAL(18,2) NOT NULL,
+    Quantity INT NOT NULL,
+    DiscountAmount DECIMAL(18,2) NOT NULL,
+
+    CONSTRAINT FK_OrderDetail_OrderHeader
+        FOREIGN KEY (OrderHeaderID) REFERENCES OrderHeaderTable(OrderHeaderID),
+
+    CONSTRAINT FK_OrderDetail_ProductDetail
+        FOREIGN KEY (ProductDetailID) REFERENCES ProductDetailTable(ProductDetailID)
+);
+
+
+/* ===========================
+   CUSTOMER REVIEW
+=========================== */
+
+CREATE TABLE CustomerReviewTable (
+    CustomerReviewID INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerReview NVARCHAR(500) NOT NULL,
+    ProductHeaderID INT NOT NULL,
+    StatusID INT NOT NULL,
+    CustomerReviewUserID INT NOT NULL,
+    OrderHeaderID INT NOT NULL,
+
+    CONSTRAINT FK_Review_Product
+        FOREIGN KEY (ProductHeaderID) REFERENCES ProductHeaderTable(ProductHeaderID),
+
+    CONSTRAINT FK_Review_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID),
+
+    CONSTRAINT FK_Review_User
+        FOREIGN KEY (CustomerReviewUserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_Review_Order
+        FOREIGN KEY (OrderHeaderID) REFERENCES OrderHeaderTable(OrderHeaderID)
+);
+
+
+/* ===========================
+   CUSTOMER REVIEW IMAGE
+=========================== */
+
+CREATE TABLE CustomerReviewImageTable (
+    CustomerReviewImageID INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerReviewID INT NOT NULL,
+    ImagePath VARCHAR(500) NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_ReviewImage_Review
+        FOREIGN KEY (CustomerReviewID) REFERENCES CustomerReviewTable(CustomerReviewID),
+
+    CONSTRAINT FK_ReviewImage_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
+);
+
+
+/* ===========================
+   PAYMENT STATUS
+=========================== */
+
+CREATE TABLE PaymentStatusTable (
+    PaymentStatusID INT IDENTITY(1,1) PRIMARY KEY,
+    PaymentStatus NVARCHAR(100) NOT NULL
+);
+
+
+/* ===========================
+   ORDER PAYMENT
+=========================== */
+
+CREATE TABLE OrderPaymentTable (
+    OrderPaymentID INT IDENTITY(1,1) PRIMARY KEY,
+    OrderHeaderID INT NOT NULL,
+    TotalPayment DECIMAL(18,2) NOT NULL,
+    PaymentGateway NVARCHAR(500) NOT NULL,
+    PaymentTypeID INT NOT NULL,
+    PaymentStatusID INT NOT NULL,
+
+    CONSTRAINT FK_OrderPayment_OrderHeader
+        FOREIGN KEY (OrderHeaderID) REFERENCES OrderHeaderTable(OrderHeaderID),
+
+    CONSTRAINT FK_OrderPayment_PaymentType
+        FOREIGN KEY (PaymentTypeID) REFERENCES PaymentTypeTable(PaymentTypeID),
+
+    CONSTRAINT FK_OrderPayment_PaymentStatus
+        FOREIGN KEY (PaymentStatusID) REFERENCES PaymentStatusTable(PaymentStatusID)
+);
+
+
+
+
