@@ -1,5 +1,5 @@
 
----------------User Setting
+---------------User Setting--------------------
 
 CREATE TABLE CountryTable (
     CountryID INT IDENTITY(1,1),
@@ -87,145 +87,299 @@ CREATE TABLE UserAddressTable (
         FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
 
----------------Stock Setting
+---------------Stock Setting--------------------
+
+/* ===========================
+   MAIN CATEGORY
+=========================== */
+
 CREATE TABLE MainCategoryTable (
-    MainCategoryID INT IDENTITY(1,1),
+    MainCategoryID INT IDENTITY(1,1) PRIMARY KEY,
     MainCategoryTitle NVARCHAR(250) NOT NULL,
-	CreatedByUserID int not null,
-	CreatedDate date not null,
-	CreatedTime time(7) not null,
-	StatusID int not null,
-    CONSTRAINT PK_MainCategoryTable_MainCategoryID PRIMARY KEY (MainCategoryID)
+    CreatedByUserID INT NOT NULL,
+    CreatedDate DATE NOT NULL,
+    CreatedTime TIME(7) NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_MainCategory_User 
+        FOREIGN KEY (CreatedByUserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_MainCategory_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
 
-Create Table SubCategoryTable(
-	SubCategoryID int identity(1,1),
-	MainCategoryID int not null,
-	SubCategoryTitle nvarchar(350) not null,
-	CreatedByUserID int not null,
-	CreatedDate date not null,
-	CreatedTime time not null,
-	StatusID int not null,
-	CONSTRAINT PK_SubCategoryTable_SubCategoryID PRIMARY KEY (SubCategoryID)
+
+/* ===========================
+   SUB CATEGORY
+=========================== */
+
+CREATE TABLE SubCategoryTable(
+    SubCategoryID INT IDENTITY(1,1) PRIMARY KEY,
+    MainCategoryID INT NOT NULL,
+    SubCategoryTitle NVARCHAR(350) NOT NULL,
+    CreatedByUserID INT NOT NULL,
+    CreatedDate DATE NOT NULL,
+    CreatedTime TIME NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_SubCategory_MainCategory
+        FOREIGN KEY (MainCategoryID) REFERENCES MainCategoryTable(MainCategoryID),
+
+    CONSTRAINT FK_SubCategory_User
+        FOREIGN KEY (CreatedByUserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_SubCategory_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
 
-Create Table UnitTable(
-	UnitID int identity(1,1),
-	UnitTitle nvarchar(30),
-	Constraint PK_UnitTable_UnitID Primary Key(UnitID)
+
+/* ===========================
+   UNIT & TAG
+=========================== */
+
+CREATE TABLE UnitTable(
+    UnitID INT IDENTITY(1,1) PRIMARY KEY,
+    UnitTitle NVARCHAR(30) NOT NULL
 );
 
-Create Table TagTable(
-	TagID int identity(1,1),
-	TagTitle nvarchar(150),
-	Constraint PK_TagTable_TagID Primary Key(TagID)
+CREATE TABLE TagTable(
+    TagID INT IDENTITY(1,1) PRIMARY KEY,
+    TagTitle NVARCHAR(150) NOT NULL
 );
+
+
+/* ===========================
+   COLOR & BRAND
+=========================== */
 
 CREATE TABLE ColorTypeTable (
-    ColorTypeID INT IDENTITY(1,1),
+    ColorTypeID INT IDENTITY(1,1) PRIMARY KEY,
     ColorTitle NVARCHAR(150) NOT NULL,
-	ColorCode NVARCHAR(30) NOT NULL,
-	StatusID int not null,
-    CONSTRAINT PK_ColorTypeTable_ColorTypeID PRIMARY KEY (ColorTypeID)
+    ColorCode NVARCHAR(30) NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_Color_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
 
 CREATE TABLE BrandTable (
-    BrandID INT IDENTITY(1,1),
+    BrandID INT IDENTITY(1,1) PRIMARY KEY,
     BrandTitle NVARCHAR(250) NOT NULL,
-	StatusID int not null,
-    CONSTRAINT PK_BrandTable_BrandID PRIMARY KEY (BrandID)
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_Brand_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
 
-Create Table ProductHeaderTable(
-	ProductHeaderID int identity(1,1),
-	SubCategoryID int not null,
-	ProductTitle nvarchar(350) not null,
-	CreatedByUserID int not null,
-	UpdatedByUserID int not null,
-	ProductInformation nvarchar(MAX) not null,
-	SKUCode varchar(20) not null,
-	CONSTRAINT PK_ProductHeaderTable_ProductHeaderID PRIMARY KEY (ProductHeaderID)
+
+/* ===========================
+   PRODUCT HEADER
+=========================== */
+
+CREATE TABLE ProductHeaderTable(
+    ProductHeaderID INT IDENTITY(1,1) PRIMARY KEY,
+    SubCategoryID INT NOT NULL,
+    BrandID INT NOT NULL,
+    ProductTitle NVARCHAR(350) NOT NULL,
+    ProductInformation NVARCHAR(MAX) NOT NULL,
+    SKUCode VARCHAR(20) NOT NULL,
+    CreatedByUserID INT NOT NULL,
+    UpdatedByUserID INT NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_ProductHeader_SubCategory
+        FOREIGN KEY (SubCategoryID) REFERENCES SubCategoryTable(SubCategoryID),
+
+    CONSTRAINT FK_ProductHeader_Brand
+        FOREIGN KEY (BrandID) REFERENCES BrandTable(BrandID),
+
+    CONSTRAINT FK_ProductHeader_CreatedUser
+        FOREIGN KEY (CreatedByUserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_ProductHeader_UpdatedUser
+        FOREIGN KEY (UpdatedByUserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_ProductHeader_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
 
-Create Table SizeTypeTable(
-	SizeTypeID int identity(1,1),	
-	SizeType nvarchar(50) not null,
-	CONSTRAINT PK_SizeTypeTable_SizeTypeID PRIMARY KEY (SizeTypeID)
-);
-Create Table SizeLevelTable(
-	SizeLevelID int identity(1,1),	
-	SizeLevel nvarchar(50) not null,
-	CONSTRAINT PK_SizeLevelTable_SizeLevelID PRIMARY KEY (SizeLevelID)
-);
-Create Table SizeTypeByLevelTable(
-	SizeTypeByLevelID int identity(1,1),
-	SizeTypeID int not null,
-	SizeLevelID int not null,
-	SizeLevelValue nvarchar(50) not null,
-	StatusID int not null,
-	GenderID int not null,
-	CONSTRAINT PK_SizeTypeByLevelTable_SizeTypeByLevelID PRIMARY KEY (SizeTypeByLevelID)
+
+/* ===========================
+   SIZE STRUCTURE
+=========================== */
+
+CREATE TABLE SizeTypeTable(
+    SizeTypeID INT IDENTITY(1,1) PRIMARY KEY,
+    SizeType NVARCHAR(50) NOT NULL
 );
 
-Create Table ProductDetailTable(
-	ProductDetailID int identity(1,1),
-	ProductHeaderID int not null,
-	ColorTypeID int not null,
-	SizeTypeByLevelID int not null,
-	UnitID int not null,
-	Quantity int not null,
-	UnitPrice int not null,
-	Barcode int not null,
-	StatusID int not null,
-	CreatedByUserID int not null,
-	UpdatedByUserID int not null,
-	CONSTRAINT PK_ProductDetailTable_ProductDetailID PRIMARY KEY (ProductDetailID)
+CREATE TABLE SizeLevelTable(
+    SizeLevelID INT IDENTITY(1,1) PRIMARY KEY,
+    SizeLevel NVARCHAR(50) NOT NULL
 );
 
-Create Table ProductFeatureTable(
-	ProductFeatureID int identity(1,1),
-	ProductHeaderID int not null,
-	ProductFeature nvarchar(MAX) not null,
-	CreatedByUserID int not null,
-	UpdatedByUserID int not null,
-	StatusID int not null,
-	CONSTRAINT PK_ProductFeatureTable_ProductFeatureID PRIMARY KEY (ProductFeatureID)
+CREATE TABLE SizeTypeByLevelTable(
+    SizeTypeByLevelID INT IDENTITY(1,1) PRIMARY KEY,
+    SizeTypeID INT NOT NULL,
+    SizeLevelID INT NOT NULL,
+    SizeLevelValue NVARCHAR(50) NOT NULL,
+    GenderID INT NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_SizeTypeByLevel_SizeType
+        FOREIGN KEY (SizeTypeID) REFERENCES SizeTypeTable(SizeTypeID),
+
+    CONSTRAINT FK_SizeTypeByLevel_SizeLevel
+        FOREIGN KEY (SizeLevelID) REFERENCES SizeLevelTable(SizeLevelID),
+
+    CONSTRAINT FK_SizeTypeByLevel_Gender
+        FOREIGN KEY (GenderID) REFERENCES GenderTable(GenderId),
+
+    CONSTRAINT FK_SizeTypeByLevel_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
 
-Create Table ProductTagTable(
-	ProductTagID int identity(1,1),
-	ProductHeaderID int not null,
-	TagID int not null,
-	StatusID int not null,
-	CONSTRAINT PK_ProductTagTable_ProductTagID PRIMARY KEY (ProductTagID)
-);
-Create Table CompareTable(
-	CompareID int identity(1,1),
-	CompareUserID int not null,
-	ProductDetailID int not null,
-	CONSTRAINT PK_CompareTable_CompareID PRIMARY KEY (CompareID)
-);
-Create Table WishListTable(
-	WishListID int identity(1,1),
-	WishListUserID int not null,
-	PeoductHeaderID int not null,
-	AddDate date not null,
-	CONSTRAINT PK_WishListTable_WishListID PRIMARY KEY (WishListID)
+
+/* ===========================
+   PRODUCT DETAIL (VARIANT / INVENTORY)
+=========================== */
+
+CREATE TABLE ProductDetailTable(
+    ProductDetailID INT IDENTITY(1,1) PRIMARY KEY,
+    ProductHeaderID INT NOT NULL,
+    ColorTypeID INT NOT NULL,
+    SizeTypeByLevelID INT NOT NULL,
+    UnitID INT NOT NULL,
+    Quantity INT NOT NULL,
+    UnitPrice DECIMAL(18,2) NOT NULL,
+    Barcode VARCHAR(50) NOT NULL,
+    StatusID INT NOT NULL,
+    CreatedByUserID INT NOT NULL,
+    UpdatedByUserID INT NOT NULL,
+
+    CONSTRAINT FK_ProductDetail_ProductHeader
+        FOREIGN KEY (ProductHeaderID) REFERENCES ProductHeaderTable(ProductHeaderID),
+
+    CONSTRAINT FK_ProductDetail_Color
+        FOREIGN KEY (ColorTypeID) REFERENCES ColorTypeTable(ColorTypeID),
+
+    CONSTRAINT FK_ProductDetail_Size
+        FOREIGN KEY (SizeTypeByLevelID) REFERENCES SizeTypeByLevelTable(SizeTypeByLevelID),
+
+    CONSTRAINT FK_ProductDetail_Unit
+        FOREIGN KEY (UnitID) REFERENCES UnitTable(UnitID),
+
+    CONSTRAINT FK_ProductDetail_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID),
+
+    CONSTRAINT FK_ProductDetail_CreatedUser
+        FOREIGN KEY (CreatedByUserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_ProductDetail_UpdatedUser
+        FOREIGN KEY (UpdatedByUserID) REFERENCES UserTable(UserId)
 );
 
-Create Table SeasonTable(
-	SeasonID int identity(1,1),
-	SeasonTitle nvarchar(500) not null,
-	SeasonStartDate date not null,
-	SeasonEndDate  date not null,
-	CreatedByUserID int not null,
-	CONSTRAINT PK_SeasonTable_SeasonID PRIMARY KEY (SeasonID)
+
+/* ===========================
+   PRODUCT FEATURE
+=========================== */
+
+CREATE TABLE ProductFeatureTable(
+    ProductFeatureID INT IDENTITY(1,1) PRIMARY KEY,
+    ProductHeaderID INT NOT NULL,
+    ProductFeature NVARCHAR(MAX) NOT NULL,
+    CreatedByUserID INT NOT NULL,
+    UpdatedByUserID INT NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_ProductFeature_ProductHeader
+        FOREIGN KEY (ProductHeaderID) REFERENCES ProductHeaderTable(ProductHeaderID),
+
+    CONSTRAINT FK_ProductFeature_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
 
-Create Table SeasonDiscountTable(
-	SeasonDiscountID int identity(1,1),
-	ProductHeaderID int  not null,
-	DiscountPercent int not null,
-	StatusID int not null,
-	CONSTRAINT PK_SeasonDiscountTable_SeasonDiscountID PRIMARY KEY (SeasonDiscountID)
+
+/* ===========================
+   PRODUCT TAG (MANY-TO-MANY)
+=========================== */
+
+CREATE TABLE ProductTagTable(
+    ProductTagID INT IDENTITY(1,1) PRIMARY KEY,
+    ProductHeaderID INT NOT NULL,
+    TagID INT NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_ProductTag_Product
+        FOREIGN KEY (ProductHeaderID) REFERENCES ProductHeaderTable(ProductHeaderID),
+
+    CONSTRAINT FK_ProductTag_Tag
+        FOREIGN KEY (TagID) REFERENCES TagTable(TagID),
+
+    CONSTRAINT FK_ProductTag_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
 );
+
+
+/* ===========================
+   COMPARE & WISHLIST
+=========================== */
+
+CREATE TABLE CompareTable(
+    CompareID INT IDENTITY(1,1) PRIMARY KEY,
+    CompareUserID INT NOT NULL,
+    ProductDetailID INT NOT NULL,
+
+    CONSTRAINT FK_Compare_User
+        FOREIGN KEY (CompareUserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_Compare_ProductDetail
+        FOREIGN KEY (ProductDetailID) REFERENCES ProductDetailTable(ProductDetailID)
+);
+
+CREATE TABLE WishListTable(
+    WishListID INT IDENTITY(1,1) PRIMARY KEY,
+    WishListUserID INT NOT NULL,
+    ProductHeaderID INT NOT NULL,
+    AddDate DATE NOT NULL,
+
+    CONSTRAINT FK_WishList_User
+        FOREIGN KEY (WishListUserID) REFERENCES UserTable(UserId),
+
+    CONSTRAINT FK_WishList_Product
+        FOREIGN KEY (ProductHeaderID) REFERENCES ProductHeaderTable(ProductHeaderID)
+);
+
+
+/* ===========================
+   SEASON & DISCOUNT
+=========================== */
+
+CREATE TABLE SeasonTable(
+    SeasonID INT IDENTITY(1,1) PRIMARY KEY,
+    SeasonTitle NVARCHAR(500) NOT NULL,
+    SeasonStartDate DATE NOT NULL,
+    SeasonEndDate DATE NOT NULL,
+    CreatedByUserID INT NOT NULL,
+
+    CONSTRAINT FK_Season_User
+        FOREIGN KEY (CreatedByUserID) REFERENCES UserTable(UserId)
+);
+
+CREATE TABLE SeasonDiscountTable(
+    SeasonDiscountID INT IDENTITY(1,1) PRIMARY KEY,
+    SeasonID INT NOT NULL,
+    ProductHeaderID INT NOT NULL,
+    DiscountPercent INT NOT NULL,
+    StatusID INT NOT NULL,
+
+    CONSTRAINT FK_SeasonDiscount_Season
+        FOREIGN KEY (SeasonID) REFERENCES SeasonTable(SeasonID),
+
+    CONSTRAINT FK_SeasonDiscount_Product
+        FOREIGN KEY (ProductHeaderID) REFERENCES ProductHeaderTable(ProductHeaderID),
+
+    CONSTRAINT FK_SeasonDiscount_Status
+        FOREIGN KEY (StatusID) REFERENCES StatusTable(StatusID)
+);
+	
