@@ -7,7 +7,7 @@ CREATE TABLE CountryTable (
     CONSTRAINT PK_CountryTable_CountryID PRIMARY KEY (CountryID)
 );
 CREATE TABLE CityTable (
-    CityId INT IDENTITY(1,1),
+    CityID INT IDENTITY(1,1),
     CountryID INT NOT NULL,
     CityName NVARCHAR(100) NOT NULL,
     CONSTRAINT PK_CityTable_CityId PRIMARY KEY (CityId),
